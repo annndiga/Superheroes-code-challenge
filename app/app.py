@@ -32,7 +32,7 @@ def get_heroes():
 
     return jsonify(hero_data)
 
-# Define the route for getting a specific hero by ID
+
 @app.route('/heroes/<int:hero_id>', methods=['GET'])
 def get_hero(hero_id):
     hero = Hero.query.get(hero_id)
@@ -43,11 +43,11 @@ def get_hero(hero_id):
             'super_name': hero.super_name,
             'powers': []
         }
-        for power in hero.powers:
+        for hero_power in hero.hero_powers:  
             power_info = {
-                'id': power.id,
-                'name': power.name,
-                'description': power.description
+                'id': hero_power.power.id,  
+                'name': hero_power.power.name,
+                'description': hero_power.power.description
             }
             hero_info['powers'].append(power_info)
 
@@ -110,7 +110,7 @@ def create_hero_power():
     power_id = data.get('power_id')
     strength = data.get('strength')
 
-    # Check if hero and power exist
+   
     hero = session.query(Hero).get(hero_id)
     power = session.query(Power).get(power_id)
 
