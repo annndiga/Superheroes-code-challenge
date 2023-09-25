@@ -2,7 +2,8 @@
 
 from flask import Flask, make_response, jsonify, request
 from flask_migrate import Migrate
-from models import db, Hero, Power
+from models import db, Hero, Power, HeroPower
+ 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -11,7 +12,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 migrate = Migrate(app, db)
 
 db.init_app(app)
-
 
 @app.route('/')
 def home():
@@ -87,37 +87,97 @@ def get_power_by_id(id):
 
 @app.route('/powers/<int:id>', methods=['PATCH'])
 def update_power(id):
-    power = session.query(Power).get(id)
+    power = Power.query.get(id)
+
     if not power:
-        return jsonify({"error": "Power not found"}), 404
+        return jsonify({'error': 'Power not found'}), 404
 
-    new_description = request.json.get('description')
-    if not new_description:
-        return jsonify({"errors": ["description is required"]}), 400
-    if len(new_description) < 20:
-        return jsonify({"errors": ["description must be at least 20 characters long"]}), 400
+    data = request.get_json()
 
-    power.description = new_description
-    session.commit()
+    if 'description' in data:
+        power.description = data['description']
 
-    power_data = {"id": power.id, "name": power.name, "description": power.description}
-    return jsonify(power_data)
+    try:
+        db.session.commit()
+        return jsonify({
+            'id': power.id,
+            'name': power.name,
+            'description': power.description
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'errors': ['Validation errors']}), 400
+
+@app.route('/hero_powers', methods=['GET'])
+def get_hero_powers():
+    hero_powers = HeroPower.query.all()
+    hero_power_data = []
+
+    for hero_power in hero_powers:
+        data = {
+            'hero_id': hero_power.hero_id,
+            'power_id': hero_power.power_id,
+            'strength': hero_power.strength
+        }
+        hero_power_data.append(data)
+
+    return jsonify(hero_power_data)
+
+@app.route('/hero_powers/<int:id>', methods=['GET'])
+def get_hero_power_by_id(id):
+    hero_power = HeroPower.query.get(id)
+
+    if not hero_power:
+        return jsonify({'error': 'HeroPower not found'}), 404
+
+    # Assuming HeroPower has attributes 'hero_id', 'power_id', and 'strength'
+    hero_power_data = {
+        'hero_id': hero_power.hero_id,
+        'power_id': hero_power.power_id,
+        'strength': hero_power.strength
+    }
+
+    return jsonify(hero_power_data)      
 
 @app.route('/hero_powers', methods=['POST'])
 def create_hero_power():
     data = request.json
-    hero_id = data.get('hero_id')
-    power_id = data.get('power_id')
+
+    
     strength = data.get('strength')
+    power_id = data.get('power_id')
+    hero_id = data.get('hero_id')
 
-   
-    hero = session.query(Hero).get(hero_id)
-    power = session.query(Power).get(power_id)
+    power = Power.query.get(power_id)
+    hero = Hero.query.get(hero_id)
 
-    if not hero or not power:
-        return jsonify({"error": "Hero or Power not found"}), 404
+    if not power or not hero:
+        return jsonify({"error": "Power or Hero not found"}), 404
 
+    hero_power = HeroPower(hero=hero, power=power, strength=strength)
+    db.session.add(hero_power)
 
+    try:
+        db.session.commit()
+
+        hero_data = {
+            'id': hero.id,
+            'name': hero.name,
+            'super_name': hero.super_name,
+            'powers': [
+                {
+                    'id': power.id,
+                    'name': power.name,
+                    'description': power.description
+                }
+            ]
+        }
+
+        return jsonify(hero_data), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'errors': ['Validation errors']}), 400
+    
 if __name__ == '__main__':
     app.run(port=5555)
                                                                                                                                                                                                                                                                                                                                                                                      
