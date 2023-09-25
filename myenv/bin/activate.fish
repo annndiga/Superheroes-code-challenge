@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/ann/Desktop/python-code-challenge-superheroes (1)/python-code-challenge-superheroes/code-challenge/myenv"
+set -gx VIRTUAL_ENV "/home/ann/Desktop/Moringa projects/Superheroes-code-challenge/myenv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

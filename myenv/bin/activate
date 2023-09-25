@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/ann/Desktop/python-code-challenge-superheroes (1)/python-code-challenge-superheroes/code-challenge/myenv"
+VIRTUAL_ENV="/home/ann/Desktop/Moringa projects/Superheroes-code-challenge/myenv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

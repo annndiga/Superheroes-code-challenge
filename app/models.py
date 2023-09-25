@@ -13,6 +13,10 @@ class Power(db.Model):
 
     powers = db.relationship('HeroPower', back_populates='power')
 
+    def validate_description(self, description):
+        if len(description) > 255:
+            raise ValueError('Description exceeds maximum length of 255 characters')
+
 class Hero(db.Model):
     __tablename__ = 'heroes'
 
@@ -32,5 +36,10 @@ class HeroPower(db.Model):
 
     hero = db.relationship('Hero', back_populates='hero_powers')
     power = db.relationship('Power', back_populates='powers')
+
+    def validate_strength(self, strength):
+        allowed_strengths = ["Strong", "Weak", "Average"]
+        if strength not in allowed_strengths:
+            raise ValueError('Invalid strength value. Allowed values are: Strong, Weak, Average')
 
 
